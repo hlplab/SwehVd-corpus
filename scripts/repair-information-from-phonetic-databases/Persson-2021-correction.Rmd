@@ -155,7 +155,9 @@ d.vowels.swe %<>%
   relocate(c(Age, L1), .after = Talker)
 ```
 
-Some vowels were misidentified/misproduced by the talkers. This was e.g. the case for several of the /hodd/ tokens. After listening through all sound files, we identified these tokens and add a column to the corrected data. Some talkers only did 5 recordings of each vowel in a first session. They were called back, some returned but some did not. We add a column indicating the number of recordings per talker.
+Some vowels were misidentified/misproduced by the talkers. This was e.g. the case for several of the /hodd/ tokens. After listening through all sound files, we identified these tokens and add a column to the corrected data. In column 'Transcribed vowel', the correctly produced vowels are labelled 'targeted', the mispronounced vowels are labelled with their corresponding IPA symbol (as defined by Anna Persson).
+
+Some talkers only did 5 recordings of each vowel in a first session. They were called back, some returned but some did not. We add a column indicating the number of recordings per talker.
 
 ```{r}
 d.vowels.swe %<>%
