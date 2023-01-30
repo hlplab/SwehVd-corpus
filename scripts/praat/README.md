@@ -1,0 +1,1 @@
+This folder contains a Praat script---vowel analyzer script---for automatic extraction of formant values, written by Mietta Lennes and adapted by Anna Persson. The vowel analyzer scripts measure formants in Swedish vowels (vowel_analyzer_swe.praat).
