@@ -89,7 +89,9 @@ This document identifies, corrects and removes outliers in the SwehVd phonetic v
 
 ```{r load-data}
 # Load the native talker data
-d.vowels.swe <- read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/raw-formant-data/vowel_formants_swe_summary_native.txt', sep = "\t", fileEncoding = "UTF-16BE") %>%
+d.vowels.swe <- rbind(
+  read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/raw-formant-data/vowel_formants_swe_summary_native.txt', sep = "\t", fileEncoding = "UTF-16BE"),
+  read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/raw-formant-data/vowel_formants_swe_summary_SW043.txt', sep = "\t", fileEncoding = "UTF-16BE"))%>%
   mutate(
     Trial = as.numeric(gsub("^.*\\_([0-9]+)$", "\\1", Token)),
     F0.mean = ifelse(F0.mean == "--undefined--", NA, as.numeric(F0.mean)),
@@ -117,7 +119,7 @@ d.vowels.swe <- read.csv('../../data/phonetic vowel statistics/Published databas
 ```
 
 # Repairing variables
-We add information on talker age and language background (collected manually on paper forms when recording).
+We add information on talker age (collected manually on paper forms when recording).
 
 ```{r}
 d.vowels.swe %<>%
@@ -145,14 +147,9 @@ d.vowels.swe %<>%
                     Talker == "SW_021" ~ 20,
                     Talker == "SW_022" ~ 32,
                     Talker == "SW_023" ~ 32,
-                    Talker == "SW_024" ~ 22),
-    L1 = case_when(
-      Talker == "SW_013" ~ "Swedish-Persian",
-      Talker == "SW_020" ~ "Swedish-Korean",
-      Talker == "SW_021" ~ "Swedish-French",
-      Talker == "SW_022" ~ "Swedish-Spanish",
-      TRUE ~ "Swedish")) %>%
-  relocate(c(Age, L1), .after = Talker)
+                    Talker == "SW_024" ~ 22,
+                    Talker == "SW_043" ~ 35)) %>%
+  relocate(Age, .after = Talker)
 ```
 
 Some vowels were misidentified/misproduced by the talkers. This was e.g. the case for several of the /hodd/ tokens. After listening through all sound files, we identified these tokens and add a column to the corrected data. In column 'Transcribed vowel', the correctly produced vowels are labelled 'targeted', the mispronounced vowels are labelled with their corresponding IPA symbol (as defined by Anna Persson).
@@ -191,7 +188,7 @@ The following plots shows the distribution of the automatically extracted F1 and
 d.vowels.swe %<>%
   # focus on F1-F2
   select(
-    Talker, Age, L1, Vowel, Transcribed_vowel, Word, Token, Trial, F0_gm, F0, Duration, SR, Quantity,
+    Talker, Age, Vowel, Transcribed_vowel, Word, Token, Trial, F0_gm, F0, Duration, SR, Quantity,
     starts_with("F1"), starts_with("F2"), starts_with("F3")) %>%
   # have the 3 measures for each formant be in different rows, rather than columns
   pivot_longer(
@@ -453,7 +450,7 @@ d.vowels.repair %<>%
 # Read in csv-file with manually repaired F0s and duration values and join it to vowel data.
 #BEGIN WITH THE MOST RECENT FILE THAT IS INCOMPLETE AND CURRENTLY ONLY CONTAINS CORRECTED F0 AND DURATION
 d.vowels.swe %<>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity) %>%
+  select(Talker, Age, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity) %>%
   left_join(
   read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_allCuesvowels_repairedF0Dur.csv') %>%
       select(Talker, Vowel, Token, Trial, Location, Quantity, F0, Duration, outlier_source) %>%
@@ -476,13 +473,13 @@ d.vowels.swe %<>%
     Duration = ifelse(!is.na(Duration.y), Duration.y, Duration.x),
     Location = Location.x) %>%
   select(-c(F0.x, F0.y, Duration.x, Duration.y, Location.x, Location.y)) %>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity) %>%
+  select(Talker, Age, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity) %>%
   #remove duplicate rows
   unique()
   
 # Read in previously corrected F1 and F2 values, based on a bivariate probability distribution (see further up)
 d.vowels.swe %<>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity) %>%
+  select(Talker, Age, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity) %>%
   # add the corrected F1, F2
   left_join(
     read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_vowels_repaired.csv') %>%
@@ -505,7 +502,7 @@ d.vowels.swe %<>%
     height = F1_to_height(F1, SR),
     backness = F2_to_backness(F1, F2)) %>%
   select(-c(F1.x, F2.x, F1.y, F2.y)) %>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, height, backness, Quantity)
+  select(Talker, Age, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, height, backness, Quantity)
 
 ```
 
@@ -527,10 +524,10 @@ Most of the cases with NAs concern talkers with creaky voices. When this was the
 #     #rename(f0gm = F0_gm, f0m = F0.mean) %>%
 #     group_by(Talker, Vowel) %>%
 #     mutate(
-#       F0_half = ifelse(F0.mean < (F0_gm / 2), TRUE, FALSE),
-#       F0_double = ifelse(F0.mean > (F0_gm * 2), TRUE, FALSE)) %>%
-#     filter(F0_half == TRUE | F0_double == TRUE | is.na(F0.mean)) %>%
-#     select(Talker, Vowel, Token, Trial, Location, Quantity, F1, F2, F0.mean),
+#       F0_half = ifelse(F0 < (F0_gm / 2), TRUE, FALSE),
+#       F0_double = ifelse(F0 > (F0_gm * 2), TRUE, FALSE)) %>%
+#     filter(F0_half == TRUE | F0_double == TRUE | is.na(F0)) %>%
+#     select(Talker, Vowel, Token, Trial, Location, Quantity, F1, F2, F0),
 #   file = "../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_F0_to_repair.csv",
 #   row.names = FALSE, quote = FALSE)
 
@@ -613,7 +610,7 @@ d.outliers.univariateF0.no2 <- d.vowels.swe %>%
 
 #Read in corrected values
 d.vowels.swe %<>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
+  select(Talker, Age, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
   left_join(
   read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_F0_no2_repaired.csv') %>%
       select(Talker, Vowel, Token, Trial, Location, Quantity, F0, Duration, outlier_source) %>%
@@ -634,7 +631,7 @@ d.vowels.swe %<>%
     F0 = ifelse(!is.na(F0.y), F0.y, F0.x),
     Duration = ifelse(!is.na(Duration.y), Duration.y, Duration.x)) %>%
   select(-c(F0.x, F0.y, Duration.x, Duration.y)) %>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
+  select(Talker, Age, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
 
 #And plot again
 d.vowels.swe %>% 
@@ -677,7 +674,7 @@ d.outliers.univariateF0.no3 <- d.vowels.swe %>%
 ```{r}
 #Read in corrected values again
 d.vowels.swe %<>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
+  select(Talker, Age, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
   left_join(
     read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_F0_no3_repaired.csv') %>%
       select(Talker, Vowel, Token, Trial, Location, Quantity, F0, outlier_source) %>%
@@ -697,7 +694,7 @@ d.vowels.swe %<>%
   mutate(
     F0 = ifelse(!is.na(F0.y), F0.y, F0.x)) %>%
   select(-c(F0.x, F0.y)) %>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
+  select(Talker, Age, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
 
 #And plot again
 d.vowels.swe %>% 
@@ -714,7 +711,7 @@ d.vowels.swe %>%
 
 #Also, read in the corrected F3-values
 d.vowels.swe %<>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
+  select(Talker, Age, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
   # add the corrected F1, F2
   left_join(
     read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_repaired_F3.csv') %>%
@@ -734,7 +731,7 @@ d.vowels.swe %<>%
   mutate(
     F3 = ifelse(!is.na(F3.y), F3.y, F3.x)) %>%
   select(-c(F3.x, F3.y)) %>%
-  select(Talker, Age, L1, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
+  select(Talker, Age, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
 
 #Also plot the F3s after correction
 d.vowels.swe %>% 
