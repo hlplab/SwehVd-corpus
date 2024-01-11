@@ -1031,7 +1031,7 @@ d.vowels.swe.male %<>%
 #   facet_wrap(~Vowel, ncol = 6)
 # ggplotly()
 
-#Looking at the repaired male talker vowels, there were clearly several AA1 tokens by talker SW_032 that haven't been targeted by the outlier detection approach, hence, write a new repair file that includes all AA1
+#Looking at the repaired male talker vowels, there were clearly several had tokens by talker SW_032 that haven't been targeted by the outlier detection approach. Also, there were many instances of errors for the back vowels at vowel midpoint, hence, write a new repair file that includes all had by talker SW_032, together with all håd and hod with F2 > 1200
 # write.csv(
 #   d.vowels.swe.male %>%
 #     # Mutate back to arpabet for csv readability
@@ -1041,17 +1041,32 @@ d.vowels.swe.male %<>%
 #         levels.vowel.IPA.swe,
 #         levels.vowel.SweFA),
 #       levels = levels.vowel.SweFA)) %>%
-#     filter(Talker == "SW_032" & Vowel == "aa1") %>%
+#     filter(Talker == "SW_032" & Vowel == "aa1" | Word %in% c("håd", "hod") & F2 > 1200) %>%
 #     select(Talker, Vowel, Token, Trial, Location, Quantity, F1, F2, F3),
-#   file = "../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_male_SW032_to_repair.csv",
+#   file = "../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_male_backvowels_to_repair.csv",
 #   row.names = FALSE, quote = FALSE)
 
-# Read in corrected values for talker SW032
+#Just to be sure, do the same for the female talkers, that also appear to have some very high härd.
+# write.csv(
+#   d.vowels.swe %>%
+#     # Mutate back to arpabet for csv readability
+#     mutate(Vowel = factor(
+#       plyr::mapvalues(
+#         Vowel,
+#         levels.vowel.IPA.swe,
+#         levels.vowel.SweFA),
+#       levels = levels.vowel.SweFA)) %>%
+#     filter(Word %in% c("håd", "hod") & F2 > 1400 | Word == "härd" & F1 < 600) %>%
+#     select(Talker, Vowel, Token, Trial, Location, Quantity, F1, F2, F3),
+#   file = "../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_female_backvowels_to_repair.csv",
+#   row.names = FALSE, quote = FALSE)
+
+# Read in corrected values for talker SW032 and the håd and hod vowels
 d.vowels.swe.male %<>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
   # add the corrected F1, F2
   left_join(
-    read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_male_SW032_repaired.csv') %>%
+    read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_male_backvowels_repaired.csv') %>%
       select(Talker, Vowel, Token, Trial, Location, F1, F2, F3, Quantity) %>%
       mutate(
         Location = gsub("\\_", "", Location),
