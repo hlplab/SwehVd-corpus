@@ -1086,6 +1086,32 @@ d.vowels.swe.male %<>%
     F3 = ifelse(!is.na(F3.y), F3.y, F3.x)) %>%
   select(-c(F1.x, F2.x, F1.y, F2.y, F3.x, F3.y)) %>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
+
+# Read in corrected values for the håd and hod vowels
+d.vowels.swe %<>%
+  select(Talker, Age, Gender, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
+  # add the corrected F1, F2
+  left_join(
+    read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_female_backvowels_repaired.csv') %>%
+      select(Talker, Vowel, Token, Trial, Location, F1, F2, F3, Quantity) %>%
+      mutate(
+        Location = gsub("\\_", "", Location),
+        Vowel = factor(
+      plyr::mapvalues(
+        Vowel,
+        levels.vowel.SweFA,
+        levels.vowel.IPA.swe),
+      levels = levels.vowel.IPA.swe)) %>%
+      mutate_at("Token", factor),
+    by = c("Talker", "Vowel", "Token", "Trial", "Location", "Quantity")) %>%
+  # whenever there is a corrected F1-F2 value (F1.y, F2.y), use that value; otherwise use the
+  # automatically-extracted F1-F2 value (F1.x, F2.x).
+  mutate(
+    F1 = ifelse(!is.na(F1.y), F1.y, F1.x),
+    F2 = ifelse(!is.na(F2.y), F2.y, F2.x),
+    F3 = ifelse(!is.na(F3.y), F3.y, F3.x)) %>%
+  select(-c(F1.x, F2.x, F1.y, F2.y, F3.x, F3.y)) %>%
+  select(Talker, Age, Gender, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
 ```
 ```{r}
 #Also, read in the corrected F3-values
