@@ -1031,7 +1031,7 @@ d.vowels.swe.male %<>%
 #   facet_wrap(~Vowel, ncol = 6)
 # ggplotly()
 
-#Looking at the repaired male talker vowels, there were clearly several had tokens by talker SW_032 that haven't been targeted by the outlier detection approach. Also, there were many instances of errors for the back vowels at vowel midpoint, hence, write a new repair file that includes all had by talker SW_032, together with all håd and hod with F2 > 1200
+#Looking at the repaired male talker vowels, there were clearly several had tokens by talker SW_032 that haven't been targeted by the outlier detection approach. Also, there were many instances of errors for the back vowels, hence, write a new repair file that includes all had by talker SW_032, together with all håd, hod, and hodd with F2 > 1200, and F1 > 400 at earlier timepoints
 # write.csv(
 #   d.vowels.swe.male %>%
 #     # Mutate back to arpabet for csv readability
@@ -1041,7 +1041,7 @@ d.vowels.swe.male %<>%
 #         levels.vowel.IPA.swe,
 #         levels.vowel.SweFA),
 #       levels = levels.vowel.SweFA)) %>%
-#     filter(Talker == "SW_032" & Vowel == "aa1" | Word %in% c("håd", "hod") & F2 > 1200) %>%
+#     filter(Talker == "SW_032" & Vowel == "aa1" | (Word %in% c("håd", "hod", "hodd") & F2 > 1200) | (Word %in% c("hod", "hodd") & F1 > 450 & Location %in% c(20, 35))) %>%
 #     select(Talker, Vowel, Token, Trial, Location, Quantity, F1, F2, F3),
 #   file = "../../data/phonetic vowel statistics/Published databases/Persson-2021/corrected-vowel-data/Persson_2021_L1_male_backvowels_to_repair.csv",
 #   row.names = FALSE, quote = FALSE)
@@ -1062,7 +1062,7 @@ d.vowels.swe.male %<>%
 #   row.names = FALSE, quote = FALSE)
 
 # Read in corrected values for talker SW032 and the håd and hod vowels
-d.vowels.swe.male %<>%
+d.vowels.swe.male %>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
   # add the corrected F1, F2
   left_join(
@@ -1151,9 +1151,10 @@ d.vowels.swe %>%
     alpha = .3, position = "identity") +
   facet_wrap(~Quantity)
 
-p.outliers.univariate.F2 %+%
-  (d.vowels.swe.male) +
-  aes(alpha = .4)
+# p.outliers.univariate.F2 %+%
+#   (d.vowels.swe %>% filter(Talker == "SW_007", Location %in% c(35,50,65))) +
+#   aes(alpha = .4, label = Token)
+# ggplotly()
 ```
 
 ## Vowel data *with* distributional outliers
