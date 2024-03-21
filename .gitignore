@@ -5,6 +5,7 @@
 *.gz
 *.Rproj
 *.tex
+*.html
 .Rproj.user
 .Rhistory
 .RData
