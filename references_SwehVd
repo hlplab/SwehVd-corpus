@@ -1,0 +1,18 @@
+@manuscript{persson2024,
+  title = {The acoustic characteristics of Central Swedish vowels},
+  author = {Persson, Anna},
+  year = {2024},
+  publisher = {manuscript; Stockholm University}
+}
+
+@article{persson-jaeger2023,
+  title = {Evaluating normalization accounts against the dense vowel space of Central Swedish},
+  author = {Persson, Anna and Jaeger, T Florian},
+  year = {2023},
+  journal = {Frontiers in Psychology},
+  volume = {14},
+  pages = {01--21},
+  URL = {https://www.frontiersin.org/articles/10.3389/fpsyg.2023.1165742},
+  doi = {10.3389/fpsyg.2023.1165742},
+  issn={1664-1078},
+}

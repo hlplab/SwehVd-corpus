@@ -1,0 +1,20 @@
+---
+title: "SwehVd corpus 2nd release March 2024"
+output: html_document
+date: "2024-03-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The second release of the SwehVd corpus - what's new
+This document lists the additions and changes made to the SwehVd corpus for the second release, March 2024.
+
+  * Added textgrids and sound files for 20 male talkers recorded in 2023 and 2024.
+  * Added demographic information about the male talkers + information on mispronunciations (Persson-2023-correction.rmd).
+  * Renamed all data files with corrected data and vowel statistics to contain 2023 instead of 2021 in file name (to reflect the year of the first release).
+  * Added other ways of identifying measurement errors in the automatic extraction of cues that wasn't captured by the current approach, incl. visual identification (Persson-2023-correction.rmd).
+  * Added files with data points to manually repair (..._to_repair.csv) and manually corrected data (..._repaired.csv).
+  * Added bib-file with references to papers that have used the SwehVd corpus (references-SwehVd).
+  * Updated README files.
