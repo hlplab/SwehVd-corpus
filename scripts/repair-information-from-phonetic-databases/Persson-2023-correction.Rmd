@@ -92,7 +92,7 @@ This document identifies, corrects and removes outliers in the SwehVd phonetic v
 # Load the female native talker data
 d.vowels.swe <- rbind(
   read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_native.txt', sep = "\t", fileEncoding = "UTF-16BE"),
-  read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_SW043.txt', sep = "\t", fileEncoding = "UTF-16BE"))%>%
+  read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_SW043.txt', sep = "\t", fileEncoding = "UTF-16BE")) %>%
   mutate(
     Gender = "female",
     Trial = as.numeric(gsub("^.*\\_([0-9]+)$", "\\1", Token)),
@@ -119,8 +119,11 @@ d.vowels.swe <- rbind(
                               Vowel %in% levels.vowel.IPA.swe.short ~"short"))
 
 # Load male native vowel data
-d.vowels.swe.male <- read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_native_male.txt', sep = "\t", fileEncoding = "UTF-16BE") %>%
-  rbind(read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_SW042.txt', sep = "\t", fileEncoding = "UTF-16BE")) %>%
+d.vowels.swe.male <- rbind(
+  read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_native_male.txt', sep = "\t", fileEncoding = "UTF-16BE"),
+  read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_SW042.txt', sep = "\t", fileEncoding = "UTF-16BE"),
+  # Adding the four final talkers
+  read.csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/raw-formant-data/vowel_formants_swe_summary_native_4male.txt', sep = "\t", fileEncoding = "UTF-16BE")) %>%
   mutate(
     Trial = as.numeric(gsub("^.*\\_([0-9]+)$", "\\1", Token)),
     F0.mean = ifelse(F0.mean == "--undefined--", NA, as.numeric(F0.mean)),
@@ -201,7 +204,11 @@ d.vowels.swe.male %<>%
                     Talker == "SW_041" ~ 37,
                     Talker == "SW_042" ~ 32,
                     Talker == "SW_044" ~ 28,
-                    Talker == "SW_045" ~ 22),
+                    Talker == "SW_045" ~ 22,
+                    Talker == "SW_046" ~ NA,
+                    Talker == "SW_047" ~ NA,
+                    Talker == "SW_048" ~ NA,
+                    Talker == "SW_049" ~ NA),
     Gender = "male") %>%
   relocate(c(Age, Gender), .after = Talker)
 ```
@@ -249,6 +256,7 @@ d.vowels.swe.male %<>%
                                   Talker == "SW_036" & Vowel == "[ʊ]" & Token %in% c(1, 2, 6, 7, 8)  ~ "[ɔ]",
                                   Talker == "SW_037" & Vowel == "[ʊ]" & !Token %in% c(1,2)  ~ "[ɔ]",
                                   Talker == "SW_044" & Vowel == "[uː]" & Token == 6  ~ "[ʊ]",
+                                  Talker == "SW_046" & Word == "häd" & Token == 8 ~ "[ɛ]",
                                   TRUE ~ "targeted"))
 ```
 
@@ -291,7 +299,7 @@ d.vowels.swe.male %<>%
     names_from = "Formant",
     values_from = "value")
 
-p = d.vowels.swe %>%
+p = d.vowels.swe.male %>%
 # Plot the long/short vowels separately
     filter(Quantity == "long") %>%
   ggplot(
@@ -959,7 +967,7 @@ d.vowels.swe.male %>%
 
 ```{r}
 # There are clearly some wrongly measured F0 values
-# Write a to-repair file with missing F0 values and instances of doubling and halving
+# Write a to-repair file with missing F0 values and instances of doubling and halving; this file has been updated with the final 4 talkers in June 2024
 # write.csv(
 #   d.vowels.swe.male %>%
 #     # Mutate back to arpabet for csv readability
@@ -973,7 +981,8 @@ d.vowels.swe.male %>%
 #     mutate(
 #       F0_half = ifelse(F0 < (F0_gm / 2), TRUE, FALSE),
 #       F0_double = ifelse(F0 > (F0_gm * 2), TRUE, FALSE)) %>%
-#     filter(F0_half == TRUE | F0_double == TRUE | is.na(F0)) %>%
+#     #also add all F0s over 180
+#     filter(F0_half == TRUE | F0_double == TRUE | is.na(F0) | F0 > 180) %>%
 #     select(Talker, Vowel, Token, Trial, Location, Quantity, F1, F2, F0),
 #   file = "../../data/phonetic vowel statistics/Published databases/Persson-2023/corrected-vowel-data/Persson_2023_L1_male_F0_to_repair.csv",
 #   row.names = FALSE, quote = FALSE)
@@ -1063,7 +1072,7 @@ d.vowels.swe.male %<>%
 #   row.names = FALSE, quote = FALSE)
 
 # Read in corrected values for talker SW032 and the håd and hod vowels
-d.vowels.swe.male %>%
+d.vowels.swe.male %<>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
   # add the corrected F1, F2
   left_join(
@@ -1140,13 +1149,13 @@ d.vowels.swe %<>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
 
 #Also plot the F3s after correction
-d.vowels.swe %>% 
+d.vowels.swe.male %>% 
   # Get the geometric mean across all five time points for the five cues
   group_by(Talker, Vowel, Token, Quantity) %>%
   summarise(across(c(F0, F1, F2, F3, Duration), ~ geometric.mean(.x))) %>%
   ungroup() %>%
   ggplot(
-    aes(F2)) +
+    aes(F3)) +
   geom_density(
     mapping = aes(fill = Vowel, linetype = Quantity), 
     alpha = .3, position = "identity") +
