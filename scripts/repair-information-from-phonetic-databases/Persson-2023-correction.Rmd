@@ -205,10 +205,10 @@ d.vowels.swe.male %<>%
                     Talker == "SW_042" ~ 32,
                     Talker == "SW_044" ~ 28,
                     Talker == "SW_045" ~ 22,
-                    Talker == "SW_046" ~ NA,
-                    Talker == "SW_047" ~ NA,
-                    Talker == "SW_048" ~ NA,
-                    Talker == "SW_049" ~ NA),
+                    Talker == "SW_046" ~ 20,
+                    Talker == "SW_047" ~ 25,
+                    Talker == "SW_048" ~ 27,
+                    Talker == "SW_049" ~ 22),
     Gender = "male") %>%
   relocate(c(Age, Gender), .after = Talker)
 ```
@@ -1124,6 +1124,62 @@ d.vowels.swe %<>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
 ```
 ```{r}
+# still outliers in the final four talkers to check
+d.vowels.swe.male %>%
+  filter(Location %in% c(35,50,65), Talker %in% c("SW_046", "SW_047", "SW_048", "SW_049")) %>%
+  group_by(Talker, Token, Vowel, Quantity) %>%
+  summarise(across(c(F0, F1, F2, F3, Duration), ~ geometric.mean(.x))) %>%
+  ggplot(aes(x=F2, y=F1, color = Vowel, shape = Talker, label = Token)) +
+  geom_point() +
+  scale_x_reverse() +
+  scale_y_reverse() +
+  scale_shape_manual(values = 1:25) +
+  facet_wrap(~Talker, scales = "free")
+ggplotly()
+
+# check all hodd and håd tokens from talker SW_048
+# write.csv(
+#   d.vowels.swe.male %>%
+#     # Mutate back to arpabet for csv readability
+#     mutate(Vowel = factor(
+#       plyr::mapvalues(
+#         Vowel,
+#         levels.vowel.IPA.swe,
+#         levels.vowel.SweFA),
+#       levels = levels.vowel.SweFA)) %>%
+#     filter(Talker == "SW_048" & Word %in% c("håd", "hodd")) %>%
+#     select(Talker, Vowel, Token, Trial, Location, Quantity, F1, F2, F3),
+#   file = "../../data/phonetic vowel statistics/Published databases/Persson-2023/corrected-vowel-data/Persson_2023_L1_SW048_backvowels_to_repair.csv",
+#   row.names = FALSE, quote = FALSE)
+
+# Read in corrected values for talker SW032 and the håd and hod vowels
+d.vowels.swe.male %<>%
+  select(Talker, Age, Gender, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
+  # add the corrected F1, F2
+  left_join(
+    read_csv('../../data/phonetic vowel statistics/Published databases/Persson-2023/corrected-vowel-data/Persson_2023_L1_SW048_backvowels_repaired.csv') %>%
+      select(Talker, Vowel, Token, Trial, Location, F1, F2, F3, Quantity) %>%
+      mutate(
+        Location = gsub("\\_", "", Location),
+        Vowel = factor(
+      plyr::mapvalues(
+        Vowel,
+        levels.vowel.SweFA,
+        levels.vowel.IPA.swe),
+      levels = levels.vowel.IPA.swe)) %>%
+      mutate_at("Token", factor),
+    by = c("Talker", "Vowel", "Token", "Trial", "Location", "Quantity")) %>%
+  # whenever there is a corrected F1-F2 value (F1.y, F2.y), use that value; otherwise use the
+  # automatically-extracted F1-F2 value (F1.x, F2.x).
+  mutate(
+    F1 = ifelse(!is.na(F1.y), F1.y, F1.x),
+    F2 = ifelse(!is.na(F2.y), F2.y, F2.x),
+    F3 = ifelse(!is.na(F3.y), F3.y, F3.x)) %>%
+  select(-c(F1.x, F2.x, F1.y, F2.y, F3.x, F3.y)) %>%
+  select(Talker, Age, Gender, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
+```
+
+```{r}
 #Also, read in the corrected F3-values
 d.vowels.swe %<>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel, Word, Token, Trial, Location, F1, F2, F3, F0_gm, F0, Duration, SR, Quantity, Unreliable_measurement) %>%
@@ -1149,13 +1205,14 @@ d.vowels.swe %<>%
   select(Talker, Age, Gender, Vowel, Transcribed_vowel,  Word, Token, Trial, Location, F0_gm, F0, Duration, SR, F1, F2, F3, Quantity, Unreliable_measurement)
 
 #Also plot the F3s after correction
-d.vowels.swe.male %>% 
+d.vowels.swe %>% 
   # Get the geometric mean across all five time points for the five cues
+  filter(Location %in% c(35,50,65)) %>%
   group_by(Talker, Vowel, Token, Quantity) %>%
   summarise(across(c(F0, F1, F2, F3, Duration), ~ geometric.mean(.x))) %>%
   ungroup() %>%
   ggplot(
-    aes(F3)) +
+    aes(F2)) +
   geom_density(
     mapping = aes(fill = Vowel, linetype = Quantity), 
     alpha = .3, position = "identity") +

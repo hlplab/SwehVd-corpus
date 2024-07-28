@@ -1,0 +1,17 @@
+---
+title: "SwehVd corpus final release July 2024"
+output: html_document
+date: "2024-07-28"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The final release of the SwehVd corpus - what's new
+This document lists the additions and changes made to the SwehVd corpus for the final release, July 2024.
+
+  * Added textgrids and sound files for 4 male talkers recorded in 2024, completing the database (N=48 talkers, N=24 female).
+  * Added demographic information about the final four male talkers + information on mispronunciations (Persson-2023-correction.rmd).
+  * Added files with data points to manually repair (..._to_repair.csv) and manually corrected data (..._repaired.csv), for these four talkers.
+  * Updated README files.
