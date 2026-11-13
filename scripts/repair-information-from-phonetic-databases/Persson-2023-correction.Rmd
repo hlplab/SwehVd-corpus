@@ -180,7 +180,7 @@ d.vowels.swe %<>%
                     Talker == "SW_022" ~ 32,
                     Talker == "SW_023" ~ 32,
                     Talker == "SW_024" ~ 22,
-                    Talker == "SW_043" ~ 35)) %>%
+                    Talker == "SW_043" ~ 37)) %>%
   relocate(Age, .after = Talker)
 
 d.vowels.swe.male %<>%
